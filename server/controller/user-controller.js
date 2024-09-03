@@ -8,9 +8,10 @@ dotenv.config()
 
 export const signupUser=async(req,res)=>{
     try {
+        console.log("fhwef")
         const hashedPassword=await bcrypt.hash(req.body.password,10);
 
-        const user={username:req.body.username,name:req.body.name,password:hashedPassword};
+        const user={username:req.body.username,name:req.body.name,password:hashedPassword,role:"0"};
         console.log(user)
         const newUser=await new userModel(user).save()
         return res.status(200).json({msg:"signup successfull"})
@@ -21,6 +22,7 @@ export const signupUser=async(req,res)=>{
 
 export const loginUser=async(req,res)=>{
     try {
+        console.log("eopf")
         let user=await userModel.findOne({username:req.body.username})
         console.log(user)
         if(!user){
@@ -28,13 +30,14 @@ export const loginUser=async(req,res)=>{
         }
         console.log("user finded")
         let match=await bcrypt.compare(req.body.password,user.password)
+        
         if(match){
             console.log("matched")
             const accessToken=jwt.sign(user.toJSON(),process.env.ACCESS_SECRET_KEY,{expiresIn:'15m'})
             const refreshToken=jwt.sign(user.toJSON(),process.env.REFRESH_SECRET_KEY)
 
             await new tokenModel({token:refreshToken}).save()
-            return res.status(200).json({accessToken:accessToken,refreshToken:refreshToken,user:user.name,username:user.username})
+            return res.status(200).json({accessToken:accessToken,refreshToken:refreshToken,user:user.name,username:user.username,role:user.role})
         }else{
             res.status(400).json({msg:"password dose not match"})
         }
